@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-cog me-2"></i>User Settings
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="settings-form">
+                <div class="mb-4">
+                    <label for="full_name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" 
+                           value="{{ settings.full_name if settings else '' }}" placeholder="Enter your full name">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="hourly_rate" class="form-label">Hourly Rate ($)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" 
+                               value="{{ settings.hourly_rate if settings else '' }}" 
+                               step="0.01" min="0" placeholder="Enter your hourly rate">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="tax_rate" class="form-label">Tax Rate (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="tax_rate" name="tax_rate" 
+                               value="{{ settings.tax_rate if settings else '0' }}" 
+                               step="0.1" min="0" max="100" placeholder="Enter tax rate">
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="hawaiiTaxBtn">
+                            <i class="fas fa-map-marker-alt me-2"></i>Apply Hawaii Tax Rate (11%)
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .settings-form {
+        max-width: 100%;
+    }
+
+    .input-group-text {
+        background-color: var(--navy);
+        color: var(--gold);
+        border-color: var(--navy);
+    }
+
+    .input-group .form-control {
+        border-color: var(--navy);
+    }
+
+    .input-group .form-control:focus {
+        border-color: var(--navy);
+        box-shadow: 0 0 0 0.2rem rgba(26, 31, 54, 0.1);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hawaiiTaxBtn = document.getElementById('hawaiiTaxBtn');
+    
+    hawaiiTaxBtn.addEventListener('click', function() {
+        fetch('/check_hawaii_tax')
+            .then(response => response.json())
+            .then(data => {
+                if (data.tax_rate) {
+                    document.getElementById('tax_rate').value = data.tax_rate;
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+                    alert.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.settings-form').prepend(alert);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                alert.innerHTML = `
+                    Error applying Hawaii tax rate
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.settings-form').prepend(alert);
+            });
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="welcome-container text-center py-5">
+    <div class="welcome-content">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-clock text-gold me-3"></i>Work Hours Tracker
+        </h1>
+        <p class="lead mb-5">Track your work hours efficiently and professionally</p>
+        
+        <div class="welcome-buttons">
+            {% if 'user_id' in session %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg mb-3">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                </a>
+            {% else %}
+                <div class="d-grid gap-3 col-md-6 mx-auto">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .welcome-content {
+        max-width: 600px;
+        padding: 2rem;
+    }
+
+    .text-gold {
+        color: var(--gold);
+    }
+
+    .welcome-buttons {
+        margin-top: 2rem;
+    }
+
+    .welcome-buttons .btn {
+        padding: 1rem 2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .welcome-buttons .btn-primary {
+        background-color: var(--navy);
+        border-color: var(--navy);
+    }
+
+    .welcome-buttons .btn-primary:hover {
+        background-color: var(--navy-light);
+        border-color: var(--navy-light);
+        transform: translateY(-2px);
+    }
+
+    .welcome-buttons .btn-outline-primary {
+        color: var(--navy);
+        border-color: var(--navy);
+    }
+
+    .welcome-buttons .btn-outline-primary:hover {
+        background-color: var(--navy);
+        border-color: var(--navy);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-content {
+            padding: 1rem;
+        }
+
+        .welcome-buttons .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-buttons .d-grid {
+            gap: 0.75rem !important;
+        }
+    }
+</style>
+{% endblock %}

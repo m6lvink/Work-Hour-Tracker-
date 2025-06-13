@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1A1F36">
+  <title>Work Hours Tracker</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --navy: #1A1F36;
+      --navy-light: #2A2F46;
+      --navy-lighter: #3A3F56;
+      --gold: #F4C430;
+      --gold-light: #FFD54F;
+      --gold-lighter: #FFE082;
+      --text-light: #F8F9FA;
+      --text-dark: #2D3748;
+      --text-muted: #718096;
+      --success: #48BB78;
+      --warning: #F6AD55;
+      --danger: #F56565;
+      --background: #F7FAFC;
+      --card-bg: #FFFFFF;
+      --border-radius: 12px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--background);
+      color: var(--text-dark);
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom);
+      line-height: 1.6;
+    }
+
+    .navbar {
+      background-color: var(--navy);
+      padding: 0.75rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .navbar-brand {
+      color: var(--gold) !important;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-link {
+      color: var(--gold) !important;
+      padding: 0.75rem 1.25rem !important;
+      transition: var(--transition);
+      border-radius: var(--border-radius);
+      margin: 0.25rem 0;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      color: var(--gold-light) !important;
+      background-color: var(--navy-light);
+      transform: translateY(-1px);
+    }
+
+    .card {
+      border: none;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+      background: var(--card-bg);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 1.25rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background-color: var(--navy);
+      border-color: var(--navy);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--navy-light);
+      border-color: var(--navy-light);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline-primary {
+      color: var(--navy);
+      border-color: var(--navy);
+      background-color: transparent;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--navy);
+      border-color: var(--navy);
+      color: var(--text-light);
+    }
+
+    .form-control {
+      border-radius: var(--border-radius);
+      border: 1px solid #E2E8F0;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(26, 31, 54, 0.1);
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      font-weight: 600;
+      color: var(--navy);
+      border-top: none;
+      padding: 1rem;
+      background-color: var(--background);
+    }
+
+    .table td {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+
+    .alert {
+      border-radius: var(--border-radius);
+      border: none;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Calendar customization */
+    .fc {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+
+    .fc-toolbar-title {
+      font-weight: 600 !important;
+      color: var(--navy) !important;
+    }
+
+    .fc-button-primary {
+      background-color: var(--navy) !important;
+      border-color: var(--navy) !important;
+      font-weight: 500 !important;
+      text-transform: capitalize !important;
+      padding: 0.5rem 1rem !important;
+      border-radius: var(--border-radius) !important;
+    }
+
+    .fc-button-primary:hover {
+      background-color: var(--navy-light) !important;
+      border-color: var(--navy-light) !important;
+    }
+
+    .fc-event {
+      border-radius: 6px;
+      border: none;
+      padding: 4px 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .card {
+        margin-bottom: 1rem;
+      }
+
+      .btn {
+        width: 100%;
+        margin-bottom: 0.75rem;
+      }
+
+      .table-responsive {
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        width: calc(100% + 2rem);
+      }
+
+      .navbar-collapse {
+        background-color: var(--navy);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-top: 0.5rem;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .nav-link {
+        padding: 1rem 1.25rem !important;
+        margin: 0.25rem 0;
+      }
+
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+
+      .form-control {
+        padding: 0.875rem;
+      }
+
+      .fc-toolbar {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .fc-toolbar-title {
+        font-size: 1.25rem !important;
+      }
+
+      .fc-button {
+        padding: 0.75rem !important;
+      }
+    }
+
+    /* iOS-specific styles */
+    @supports (-webkit-touch-callout: none) {
+      /* Prevent pull-to-refresh */
+      body {
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Improve tap highlight */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Fix input zoom */
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="password"],
+      select,
+      textarea {
+        font-size: 16px !important;
+        -webkit-appearance: none;
+        appearance: none;
+        border-radius: var(--border-radius);
+      }
+
+      /* Fix button appearance */
+      button,
+      .btn {
+        -webkit-appearance: none;
+        appearance: none;
+        cursor: pointer;
+      }
+
+      /* Improve scrolling */
+      .table-responsive,
+      .fc-view-harness {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+      }
+
+      /* Fix modal scrolling */
+      .modal {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Improve touch feedback */
+      .btn:active,
+      .nav-link:active,
+      .fc-button:active {
+        transform: scale(0.98);
+      }
+
+      /* Fix safe areas */
+      .navbar {
+        padding-top: env(safe-area-inset-top);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+
+      .container {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+      }
+
+      /* Fix bottom safe area */
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      /* Improve calendar touch targets */
+      .fc-button {
+        min-height: 44px;
+        padding: 0.75rem 1rem !important;
+      }
+
+      .fc-daygrid-day {
+        min-height: 44px;
+      }
+
+      /* Fix scrolling momentum */
+      .fc-scroller {
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* Auth pages styling */
+    .auth-container {
+      max-width: 100%;
+      padding: 1.5rem;
+      margin: 2rem auto;
+    }
+
+    @media (min-width: 768px) {
+      .auth-container {
+        max-width: 450px;
+      }
+    }
+
+    .auth-title {
+      color: var(--navy);
+      margin-bottom: 2rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 2rem;
+    }
+
+    .auth-form {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+    }
+
+    .auth-links {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .auth-links a {
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .auth-links a:hover {
+      color: var(--navy-light);
+    }
+
+    /* Stats cards styling */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stats-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .stats-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stats-card h3 {
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .stats-card p {
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('welcome') }}">
+        <i class="fas fa-clock me-2"></i>Work Hours
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          {% if 'user_id' in session %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('dashboard') }}">
+              <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">
+              <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('register') }}">
+              <i class="fas fa-user-plus me-2"></i>Register
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <!-- Bootstrap Tooltip -->
+  <script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,20 @@
+﻿# Secrets
+.env
+client_secret_*.json
+client_secrets.json
+
+# Python artifacts
+venv/
+__pycache__/
+*.py[cod]
+
+# Local DB
+workhours.db
+
+# Logs & misc
+*.log
+.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/

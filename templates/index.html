@@ -1,0 +1,363 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-chart-line me-2"></i>Work Hours Dashboard
+        </h2>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                <i class="fas fa-cog me-2"></i>Settings
+            </a>
+            <button class="btn btn-outline-primary" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Export
+            </button>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-import me-2"></i>Import
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Hours</h6>
+                    <h3 class="card-title mb-0">{{ total_hours|round(2) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Entries This Month</h6>
+                    <h3 class="card-title mb-0">{{ entries_this_month }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Avg Hours/Day</h6>
+                    <h3 class="card-title mb-0">{{ avg_hours_per_day|round(2) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Earnings</h6>
+                    <h3 class="card-title mb-0">${{ total_earnings|round(2) }}</h3>
+                    {% if settings and settings.tax_rate > 0 %}
+                    <small class="text-muted">Net: ${{ net_earnings|round(2) }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Calendar View -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Calendar View
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Entry -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>Add New Entry
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                            <div class="invalid-feedback">Please select a date</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="hours" class="form-label">Hours</label>
+                            <input type="number" class="form-control" id="hours" name="hours" min="0.1" max="24" step="0.1" required>
+                            <div class="invalid-feedback">Please enter hours between 0.1 and 24</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Entry</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Entries -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Entries
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Hours</th>
+                                    {% if settings and settings.hourly_rate %}
+                                    <th>Earnings</th>
+                                    {% endif %}
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries %}
+                                <tr data-entry-id="{{ entry.id }}">
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.hours }}</td>
+                                    {% if settings and settings.hourly_rate %}
+                                    <td>${{ (entry.hours * settings.hourly_rate)|round(2) }}</td>
+                                    {% endif %}
+                                    <td>{{ entry.description }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('delete', id=entry.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Delete Entry">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i>Import Excel File
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('import_excel') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select Excel File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        The Excel file should have columns: Date, Hours, Description
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .stat-card {
+        background: var(--navy);
+        color: var(--gold);
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-card .card-subtitle {
+        color: var(--gold-light) !important;
+    }
+
+    #calendar {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .fc-event {
+        cursor: pointer;
+        background-color: var(--navy) !important;
+        border-color: var(--navy) !important;
+    }
+
+    .fc-event:hover {
+        background-color: var(--navy-dark) !important;
+    }
+
+    .fc-toolbar-title {
+        color: var(--navy) !important;
+    }
+
+    .fc-button-primary {
+        background-color: var(--navy) !important;
+        border-color: var(--navy) !important;
+    }
+
+    .fc-button-primary:hover {
+        background-color: var(--navy-dark) !important;
+        border-color: var(--navy-dark) !important;
+    }
+
+    .entry-form {
+        max-width: 100%;
+    }
+
+    .table th {
+        color: var(--navy);
+    }
+
+    .highlight-entry {
+        animation: highlight 2s ease-out;
+    }
+
+    .highlight-form {
+        animation: highlight 2s ease-out;
+    }
+
+    @keyframes highlight {
+        0% {
+            background-color: var(--gold);
+            transform: scale(1.02);
+        }
+        100% {
+            background-color: transparent;
+            transform: scale(1);
+        }
+    }
+
+    /* iOS-specific styles */
+    @supports (-webkit-touch-callout: none) {
+        .dashboard-container {
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .stat-card {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn {
+            min-height: 44px;
+        }
+
+        .form-control {
+            font-size: 16px;
+        }
+
+        .table {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+
+<script>
+function initCalendar(entries) {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth'
+        },
+        events: entries.map(function(entry) {
+            return {
+                title: entry.hours + ' hours',
+                date: entry.date,
+                id: entry.id,
+                backgroundColor: 'var(--gold)',
+                borderColor: 'var(--gold)'
+            };
+        }),
+        dateClick: function(info) {
+            const date = info.dateStr;
+            const events = calendar.getEvents().filter(event => event.startStr === date);
+            
+            if (events.length > 0) {
+                // If there are entries for this date, scroll to them
+                const entryId = events[0].id;
+                const entryRow = document.querySelector(`tr[data-entry-id="${entryId}"]`);
+                if (entryRow) {
+                    entryRow.classList.add('highlight-entry');
+                    entryRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        entryRow.classList.remove('highlight-entry');
+                    }, 2000);
+                }
+            } else {
+                // If no entries, scroll to form and set date
+                const form = document.querySelector('form');
+                const dateInput = form.querySelector('#date');
+                dateInput.value = date;
+                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                form.classList.add('highlight-form');
+                setTimeout(() => {
+                    form.classList.remove('highlight-form');
+                }, 2000);
+            }
+        }
+    });
+    calendar.render();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Initialize calendar
+    const entries = JSON.parse('{{ entries|tojson|safe }}');
+    initCalendar(entries);
+
+    // Set today's date as default in the form
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+});
+
+function exportToExcel() {
+    window.location.href = "{{ url_for('export') }}";
+}
+</script>
+{% endblock %}

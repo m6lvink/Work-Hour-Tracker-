@@ -1,0 +1,19 @@
+input, button {
+  transition: all 0.2s ease;
+}
+input:focus, button:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+body {
+  background: repeating-linear-gradient(
+    45deg,
+    #e3e6f0,     /* light desaturated navy */
+    #e3e6f0 20px,
+    #e3e6f0 20px,
+    #c5cadc 20px,
+    #c5cadc 40px
+  );
+  font-family: 'Inter', sans-serif;
+}
