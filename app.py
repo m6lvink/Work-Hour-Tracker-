@@ -11,8 +11,24 @@ import pandas as pd
 import openpyxl
 from io import BytesIO
 
+from google_auth_oauthlib.flow import Flow
+
+# Initialize the OAuth flow from the Render-mounted secret file
+flow = Flow.from_client_secrets_file(
+    os.environ["GOOGLE_CREDENTIALS_FILE"],
+    scopes=[
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+    ],
+    redirect_uri="https://<YOUR-RENDER-URL>/oauth2callback"
+)
+
+
+
 # Load environment variables
 load_dotenv()
+
+
 
 # Configure logging
 logging.basicConfig(
@@ -616,3 +632,21 @@ def check_hawaii_tax():
 
 if __name__ == '__main__':
     app.run(debug=os.getenv('FLASK_DEBUG', '0') == '1')
+
+from flask import session, redirect, request, abort, url_for
+
+@app.route("/login/google")
+def login_google():
+    auth_url, state = flow.authorization_url()
+    session["state"] = state
+    return redirect(auth_url)
+
+@app.route("/oauth2callback")
+def oauth2callback():
+    if request.args.get("state") != session.get("state"):
+        abort(500, "Invalid state parameter")
+    flow.fetch_token(authorization_response=request.url)
+
+    creds = flow.credentials
+    # now you can use creds.token, creds.id_token, etc.
+    return redirect(url_for("dashboard"))
